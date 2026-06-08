@@ -1,0 +1,33 @@
+spring:
+  application:
+    name: CareerOS
+  profiles:
+    default: local
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+    show-sql: false
+  servlet:
+    multipart:
+      max-file-size: 20MB
+      max-request-size: 20MB
+
+server:
+  port: ${SERVER_PORT:8080}
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:careeros-dev-secret-key-change-me-careeros-dev-secret-key}
+    expiration-minutes: ${JWT_EXPIRATION_MINUTES:1440}
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  upload-dir: ${UPLOAD_DIR:uploads}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics

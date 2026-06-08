@@ -1,0 +1,17 @@
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/careeros}
+    username: ${SPRING_DATASOURCE_USERNAME:careeros}
+    password: ${SPRING_DATASOURCE_PASSWORD:careeros}
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  frontend-url: ${FRONTEND_URL:http://localhost:3000}
+  upload-dir: ${UPLOAD_DIR:uploads}
