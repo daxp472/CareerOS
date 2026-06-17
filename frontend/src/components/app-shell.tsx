@@ -1,12 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { LogOut, Menu, Search, Sparkles } from "lucide-react";
 import { navItems } from "@/lib/navigation";
 import { Button, Card } from "@/components/ui";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { clearToken } from "@/lib/api";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -46,14 +44,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Card className="mt-4 border-white/10 bg-white/5 p-4">
               <p className="text-xs uppercase tracking-[0.3em] text-cyan-300/70">Session</p>
               <p className="mt-2 text-sm text-slate-200">Logged in student session</p>
-              <div className="mt-4 flex gap-2">
-                <ThemeToggle />
+              <div className="mt-4">
                 <Button
                   onClick={() => {
                     clearToken();
                     router.push("/auth");
                   }}
-                  className="gap-2 bg-white/10 text-slate-100 hover:bg-white/15"
+                  className="w-full gap-2 bg-white/10 text-slate-100 hover:bg-white/15"
                 >
                   <LogOut className="h-4 w-4" />
                   Sign out

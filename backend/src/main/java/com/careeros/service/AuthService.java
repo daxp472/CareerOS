@@ -47,11 +47,15 @@ public class AuthService {
             throw new BadRequestException("Email already registered");
         }
 
+        if (request.role() == UserRole.ADMIN) {
+            throw new BadRequestException("Registering as ADMIN is not permitted");
+        }
+
         User user = new User();
         user.setFullName(request.fullName());
         user.setEmail(request.email().toLowerCase());
         user.setPasswordHash(passwordEncoder.encode(request.password()));
-        user.setRole(request.role() == null ? UserRole.STUDENT : request.role());
+        user.setRole(UserRole.STUDENT);
         user.setPhone(request.phone());
         user.setDepartment(request.department());
         user.setGraduationYear(request.graduationYear());

@@ -28,7 +28,7 @@ export function AuthPanel() {
         setStatus(`Logged in as ${response.data.fullName} (${response.data.role}). Token prefix: ${response.data.token.slice(0, 18)}...`);
         router.push("/dashboard");
       } else if (mode === "register") {
-        const response = await api.register({ fullName: form.fullName || "CareerOS Student", email: form.email, password: form.password, role: form.role });
+        const response = await api.register({ fullName: form.fullName || "CareerOS Student", email: form.email, password: form.password, role: "STUDENT" });
         setToken(response.data.token);
         setStatus(`Registered account for ${response.data.fullName}. Token prefix: ${response.data.token.slice(0, 18)}...`);
         router.push("/dashboard");
@@ -65,16 +65,6 @@ export function AuthPanel() {
         {mode === "register" && <Input value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} placeholder="Full name" />}
         {(mode === "login" || mode === "register") && <Input value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} placeholder="Email" type="email" />}
         {mode !== "forgot" && <Input value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} placeholder="Password" type="password" />}
-        {mode === "register" && (
-          <div className="flex gap-2">
-            <button type="button" onClick={() => setForm({ ...form, role: "STUDENT" })} className={`flex-1 rounded-2xl border px-4 py-3 text-sm ${form.role === "STUDENT" ? "border-cyan-400/50 bg-cyan-400/10 text-cyan-100" : "border-white/10 bg-white/5 text-slate-300"}`}>
-              Student
-            </button>
-            <button type="button" onClick={() => setForm({ ...form, role: "ADMIN" })} className={`flex-1 rounded-2xl border px-4 py-3 text-sm ${form.role === "ADMIN" ? "border-fuchsia-400/50 bg-fuchsia-400/10 text-fuchsia-100" : "border-white/10 bg-white/5 text-slate-300"}`}>
-              Admin
-            </button>
-          </div>
-        )}
         {mode === "forgot" && <Input value={form.resetEmail} onChange={(event) => setForm({ ...form, resetEmail: event.target.value })} placeholder="Recovery email" type="email" />}
         <Button type="submit" className="w-full bg-gradient-to-r from-cyan-300 to-blue-400 text-slate-950 hover:opacity-90">
           {loading ? "Working..." : mode === "forgot" ? "Generate reset token" : mode === "register" ? "Create account" : "Sign in"}
