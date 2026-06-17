@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, setToken } from "@/lib/api";
 import { Badge, Button, Card, Input, Textarea } from "@/components/ui";
@@ -18,6 +18,13 @@ export function AuthPanel() {
     password: "",
     role: "STUDENT",
   });
+
+  useEffect(() => {
+    const token = window.localStorage.getItem("careeros-token");
+    if (token) {
+      router.push("/dashboard");
+    }
+  }, [router]);
 
   async function submit(event: import("react").FormEvent<HTMLFormElement>) {
     event.preventDefault();

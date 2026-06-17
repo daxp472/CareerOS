@@ -38,6 +38,12 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   });
 
   if (!response.ok) {
+    if (response.status === 401) {
+      clearToken();
+      if (typeof window !== "undefined") {
+        window.location.href = "/auth";
+      }
+    }
     const payload = await response.json().catch(() => null);
     throw new Error(payload?.message ?? payload?.error ?? `Request failed with status ${response.status}`);
   }
