@@ -1,4 +1,8 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8080/api";
+let base = process.env.NEXT_PUBLIC_API_URL || "https://careeros-xz2c.onrender.com/api";
+if (base && !base.endsWith("/api") && !base.endsWith("/api/")) {
+  base = base.replace(/\/$/, "") + "/api";
+}
+const API_BASE_URL = base;
 
 const TOKEN_KEY = "careeros-token";
 
