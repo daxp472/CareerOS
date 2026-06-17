@@ -1,63 +1,70 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { api } from "@/lib/api";
+import { Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/page-header";
-import { Card, Button, Input, Textarea } from "@/components/ui";
-import { interviewExperienceList } from "@/lib/app-data";
+import { Button, Card, Input, Label, Textarea } from "@/components/ui";
+import { getInterviewExperiences, addInterviewExperience, deleteInterviewExperience, seedIfEmpty, type InterviewExperience } from "@/lib/store";
 
 export default function InterviewExperiencesPage() {
-  const [loading, setLoading] = useState(false);
+  const [experiences, setExperiences] = useState<InterviewExperience[]>([]);
   const [form, setForm] = useState({ companyName: "", questionsAsked: "", topicsCovered: "", learnings: "", notes: "", interviewDate: "" });
+  const [mounted, setMounted] = useState(false);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    try {
-      await api.createInterviewExperience({
-        companyName: form.companyName,
-        questionsAsked: form.questionsAsked,
-        topicsCovered: form.topicsCovered,
-        learnings: form.learnings,
-        notes: form.notes,
-        interviewDate: form.interviewDate || undefined,
-      });
-      toast.success("Interview experience saved");
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Unable to save interview experience");
-    } finally {
-      setLoading(false);
-    }
+  function reload() { setExperiences(getInterviewExperiences()); }
+  useEffect(() => { seedIfEmpty(); reload(); setMounted(true); }, []);
+
+  if (!mounted) return <div className="flex h-[60vh] items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-2 border-cyan-300 border-t-transparent" /></div>;
+
+  function submit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!form.companyName.trim()) { toast.error("Company name is required"); return; }
+    addInterviewExperience(form);
+    setForm({ companyName: "", questionsAsked: "", topicsCovered: "", learnings: "", notes: "", interviewDate: "" });
+    reload();
+    toast.success("Interview note saved!");
   }
+
+  function handleDelete(id: string) { deleteInterviewExperience(id); reload(); toast.success("Note deleted"); }
 
   return (
     <div className="space-y-6">
-      <PageHeader title="Interview Experience Journal" description="Capture what was asked, what you learned, and how to answer better next time." actionLabel="Add note" />
+      <PageHeader title="Interview Experience Journal" description="Capture what was asked, what you learned, and how to answer better next time." />
       <div className="grid gap-6 xl:grid-cols-[1fr_0.8fr]">
         <Card className="border-white/10 bg-white/5">
-          <h3 className="text-lg font-semibold text-white">Saved interview notes</h3>
-          <div className="mt-4 space-y-4">
-            {interviewExperienceList.map((item) => (
-              <div key={item.company} className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
-                <p className="font-medium text-white">{item.company}</p>
-                <p className="mt-1 text-sm text-slate-300">Questions: {item.questions}</p>
-                <p className="mt-1 text-sm text-slate-400">Topics: {item.topics}</p>
-                <p className="mt-1 text-xs text-slate-500">{item.learnings}</p>
-              </div>
-            ))}
-          </div>
+          <h3 className="text-lg font-semibold text-white mb-4">Saved interview notes</h3>
+          {experiences.length === 0 ? (
+            <p className="text-sm text-slate-400">No interview experiences saved yet.</p>
+          ) : (
+            <div className="space-y-4">
+              {experiences.map((item) => (
+                <div key={item.id} className="rounded-2xl border border-white/10 bg-slate-950/35 p-4">
+                  <div className="flex items-start justify-between">
+                    <div className="min-w-0">
+                      <p className="font-medium text-white text-lg">{item.companyName}</p>
+                      {item.questionsAsked && <div className="mt-2"><span className="text-xs uppercase tracking-widest text-cyan-300/70">Questions</span><p className="mt-1 text-sm text-slate-300">{item.questionsAsked}</p></div>}
+                      {item.topicsCovered && <div className="mt-2"><span className="text-xs uppercase tracking-widest text-violet-300/70">Topics</span><p className="mt-1 text-sm text-slate-400">{item.topicsCovered}</p></div>}
+                      {item.learnings && <div className="mt-2"><span className="text-xs uppercase tracking-widest text-emerald-300/70">Learnings</span><p className="mt-1 text-sm text-slate-400">{item.learnings}</p></div>}
+                      {item.notes && <p className="mt-2 text-xs text-slate-500 italic">{item.notes}</p>}
+                    </div>
+                    <Button onClick={() => handleDelete(item.id)} className="bg-rose-500/10 border-rose-400/30 text-rose-200 hover:bg-rose-500/20 p-2 shrink-0"><Trash2 className="h-3.5 w-3.5" /></Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </Card>
-        <Card className="border-white/10 bg-white/5">
-          <h3 className="text-lg font-semibold text-white">New experience</h3>
-          <form className="mt-4 space-y-3" onSubmit={submit}>
-            <Input placeholder="Company name" value={form.companyName} onChange={(event) => setForm({ ...form, companyName: event.target.value })} />
-            <Textarea placeholder="Questions asked" value={form.questionsAsked} onChange={(event) => setForm({ ...form, questionsAsked: event.target.value })} />
-            <Textarea placeholder="Topics covered" value={form.topicsCovered} onChange={(event) => setForm({ ...form, topicsCovered: event.target.value })} />
-            <Textarea placeholder="Learnings" value={form.learnings} onChange={(event) => setForm({ ...form, learnings: event.target.value })} />
-            <Textarea placeholder="Notes" value={form.notes} onChange={(event) => setForm({ ...form, notes: event.target.value })} />
-            <Input type="datetime-local" value={form.interviewDate} onChange={(event) => setForm({ ...form, interviewDate: event.target.value })} />
-            <Button type="submit" className="w-full bg-gradient-to-r from-cyan-300 to-blue-400 text-slate-950">{loading ? "Saving..." : "Save note"}</Button>
+        <Card className="border-white/10 bg-white/5 h-fit">
+          <h3 className="text-lg font-semibold text-white mb-4">New experience</h3>
+          <form className="space-y-3" onSubmit={submit}>
+            <div><Label>Company name *</Label><Input placeholder="e.g. PhonePe" value={form.companyName} onChange={(e) => setForm({ ...form, companyName: e.target.value })} /></div>
+            <div><Label>Questions asked</Label><Textarea placeholder="What questions were asked?" value={form.questionsAsked} onChange={(e) => setForm({ ...form, questionsAsked: e.target.value })} /></div>
+            <div><Label>Topics covered</Label><Textarea placeholder="Main topics: DSA, System Design..." value={form.topicsCovered} onChange={(e) => setForm({ ...form, topicsCovered: e.target.value })} /></div>
+            <div><Label>Learnings</Label><Textarea placeholder="What did you learn from this experience?" value={form.learnings} onChange={(e) => setForm({ ...form, learnings: e.target.value })} /></div>
+            <div><Label>Notes</Label><Textarea placeholder="Additional notes..." value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
+            <div><Label>Interview date</Label><Input type="datetime-local" value={form.interviewDate} onChange={(e) => setForm({ ...form, interviewDate: e.target.value })} /></div>
+            <Button type="submit" className="w-full bg-gradient-to-r from-cyan-300 to-blue-400 text-slate-950">Save note</Button>
           </form>
         </Card>
       </div>
