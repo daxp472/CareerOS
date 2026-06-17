@@ -4,12 +4,14 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { api, setToken } from "@/lib/api";
 import { Badge, Button, Card, Input, Textarea } from "@/components/ui";
+import { Eye, EyeOff } from "lucide-react";
 
 export function AuthPanel() {
   const router = useRouter();
   const [mode, setMode] = useState<"login" | "register">("login");
   const [status, setStatus] = useState<string>("Ready to connect to the backend API.");
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState<{ fullName: string; email: string; password: string; role: "STUDENT" | "ADMIN" }>({
     fullName: "",
     email: "",
@@ -24,13 +26,39 @@ export function AuthPanel() {
       if (mode === "login") {
         const response = await api.login({ email: form.email, password: form.password });
         setToken(response.data.token);
-        setStatus(`Logged in as ${response.data.fullName} (${response.data.role}). Token prefix: ${response.data.token.slice(0, 18)}...`);
+        
+        // Clear mock data from local storage on login for a fresh account
+        localStorage.removeItem("careeros-applications");
+        localStorage.removeItem("careeros-interviews");
+        localStorage.removeItem("careeros-reminders");
+        localStorage.removeItem("careeros-resumes");
+        localStorage.removeItem("careeros-skills");
+        localStorage.removeItem("careeros-goals");
+        localStorage.removeItem("careeros-interview-experiences");
+        localStorage.removeItem("careeros-questions");
+        localStorage.removeItem("careeros-activities");
+        localStorage.setItem("careeros-seeded", "true");
+
+        setStatus(`Logged in as ${response.data.fullName} (${response.data.role}).`);
         router.push("/dashboard");
       } else {
         const response = await api.register({ fullName: form.fullName || "CareerOS Student", email: form.email, password: form.password, role: "STUDENT" });
         setToken(response.data.token);
-        setStatus(`Registered account for ${response.data.fullName}. Token prefix: ${response.data.token.slice(0, 18)}...`);
-        router.push("/dashboard");
+        
+        // Clear mock data from local storage for a completely fresh account
+        localStorage.removeItem("careeros-applications");
+        localStorage.removeItem("careeros-interviews");
+        localStorage.removeItem("careeros-reminders");
+        localStorage.removeItem("careeros-resumes");
+        localStorage.removeItem("careeros-skills");
+        localStorage.removeItem("careeros-goals");
+        localStorage.removeItem("careeros-interview-experiences");
+        localStorage.removeItem("careeros-questions");
+        localStorage.removeItem("careeros-activities");
+        localStorage.setItem("careeros-seeded", "true");
+
+        setStatus(`Registered account for ${response.data.fullName}.`);
+        router.push("/profile");
       }
     } catch (error) {
       setStatus(error instanceof Error ? error.message : "Unable to reach backend");
@@ -60,7 +88,12 @@ export function AuthPanel() {
       <form className="space-y-3" onSubmit={submit}>
         {mode === "register" && <Input value={form.fullName} onChange={(event) => setForm({ ...form, fullName: event.target.value })} placeholder="Full name" />}
         <Input value={form.email} onChange={(event) => setForm({ ...form, email: event.target.value })} placeholder="Email" type="email" />
-        <Input value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} placeholder="Password" type="password" />
+        <div className="relative">
+          <Input value={form.password} onChange={(event) => setForm({ ...form, password: event.target.value })} placeholder="Password" type={showPassword ? "text" : "password"} className="pr-10" />
+          <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-3 text-slate-400 hover:text-white transition">
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
         <Button type="submit" className="w-full bg-gradient-to-r from-cyan-300 to-blue-400 text-slate-950 hover:opacity-90">
           {loading ? "Working..." : mode === "register" ? "Create account" : "Sign in"}
         </Button>

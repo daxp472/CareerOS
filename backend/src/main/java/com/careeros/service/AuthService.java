@@ -68,7 +68,7 @@ public class AuthService {
         return toAuthResponse(saved, token);
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     public AuthResponse login(LoginRequest request) {
         authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email().toLowerCase(), request.password()));
         User user = userRepository.findByEmail(request.email().toLowerCase())
